@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CodeCash</string>
+    
+    <!-- Splash -->
+    <string name="get_started">GET STARTED</string>
+    <string name="log_in">LOG IN</string>
+    
+    <!-- Login -->
+    <string name="welcome_back">Welcome Back!</string>
+    <string name="email">email:</string>
+    <string name="password">password:</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="no_account">Don\'t have an account? Sign up</string>
+    
+    <!-- Sign Up -->
+    <string name="welcome">Welcome!</string>
+    <string name="full_name">Full Name</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="create_account">Create Account</string>
+    <string name="have_account">Already have an account? Log in</string>
+    
+    <!-- Dashboard -->
+    <string name="welcome_user">Welcome back, Alex! 👋</string>
+    <string name="wallet">Wallet:</string>
+    <string name="total_balance">TOTAL BALANCE</string>
+    <string name="income">Income:</string>
+    <string name="expenses">Expenses:</string>
+    <string name="recent_transactions">RECENT TRANSACTIONS:</string>
+    <string name="view_more">View more</string>
+    
+    <!-- Navigation -->
+    <string name="home">Home</string>
+    <string name="stats">Stats</string>
+    <string name="budget">Budget</string>
+    <string name="forecast">Forecast</string>
+    <string name="settings">Settings</string>
+    <string name="profile">Profile</string>
+    
+    <!-- Transaction Detail -->
+    <string name="transaction_details">Transaction Details</string>
+    <string name="status">Status</string>
+    <string name="reference_number">Reference Number</string>
+    <string name="completed">Completed</string>
+    
+    <!-- Profile -->
+    <string name="user_name">Alex Johnson</string>
+    <string name="user_email">alex.johnson@example.com</string>
+    <string name="user_phone">+1 (555) 123-4567</string>
+    <string name="member_since">Member since January 2024</string>
+    
+    <!-- Forms -->
+    <string name="recipient">Recipient</string>
+    <string name="amount">Amount</string>
+    <string name="note">Note (Optional)</string>
+    <string name="request_from">Request From</string>
+    <string name="reason">Reason</string>
+    <string name="payment_method">Payment Method</string>
+    <string name="submit">Submit</string>
+    <string name="cancel">Cancel</string>
+    <string name="send_money">Send Money</string>
+    <string name="request_money">Request Money</string>
+    <string name="top_up">Top Up</string>
+    
+    <!-- Budget/Settings Placeholders -->
+    <string name="budget_coming_soon">📊 Budget tracking – Coming in Part 2!</string>
+    <string name="settings_coming_soon">⚙️ Settings &amp; preferences – Coming in Part 2!</string>
+</resources>
