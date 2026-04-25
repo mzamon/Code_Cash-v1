@@ -3,25 +3,30 @@ package com.codecash.app
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.button.MaterialButton
+import androidx.lifecycle.lifecycleScope
+import com.codecash.app.data.AppDatabase
+import com.codecash.app.databinding.ActivitySplashBinding
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class SplashActivity : AppCompatActivity() {
+    private lateinit var binding: ActivitySplashBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
+        binding = ActivitySplashBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        // OPSC DOC: POE - Entry point of application
-        // MM: Mental model - User sees brand identity first
-
-        findViewById<MaterialButton>(R.id.btnGetStarted).setOnClickListener {
-            // Navigate to Sign Up for new users
-            startActivity(Intent(this, SignUpActivity::class.java))
-        }
-
-        findViewById<MaterialButton>(R.id.btnLogin).setOnClickListener {
-            // Navigate to Login for existing users
-            startActivity(Intent(this, LoginActivity::class.java))
+        lifecycleScope.launch {
+            delay(1200)
+            val user = AppDatabase.getDatabase(this@SplashActivity).userDao().getFirstUser()
+            val intent = if (user != null) {
+                Intent(this@SplashActivity, LoginActivity::class.java)
+            } else {
+                Intent(this@SplashActivity, SignUpActivity::class.java)
+            }
+            startActivity(intent)
+            finish()
         }
     }
 }

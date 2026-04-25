@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.codecash.app">
 
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -9,7 +11,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CodeCash">
-        
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <activity
             android:name=".SplashActivity"
             android:exported="true"
@@ -19,20 +31,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
         <activity android:name=".LoginActivity" />
         <activity android:name=".SignUpActivity" />
         <activity android:name=".DashboardActivity" />
-        <activity android:name=".TransactionDetailActivity" />
-        <activity android:name=".ProfileActivity" />
+        <activity android:name=".AddExpenseActivity" />
+        <activity android:name=".CategoriesActivity" />
+        <activity android:name=".ExpenseListActivity" />
+        <activity android:name=".ExpenseDetailActivity" />
         <activity android:name=".BudgetActivity" />
+        <activity android:name=".StatsActivity" />
+        <activity android:name=".ProfileActivity" />
         <activity android:name=".SettingsActivity" />
-        <activity android:name=".SendMoneyActivity" />
-        <activity android:name=".RequestMoneyActivity" />
-        <activity android:name=".TopUpActivity" />
-        <activity android:name=".StatsActivity" />      <!-- NEW -->
-        <activity android:name=".ForecastActivity" />   <!-- NEW -->
-        
+        <activity android:name=".ForecastActivity" />
+
     </application>
 
 </manifest>
