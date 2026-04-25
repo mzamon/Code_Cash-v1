@@ -33,6 +33,7 @@ class SendMoneyActivity : AppCompatActivity() {
         
         btnCancel.setOnClickListener {
             finish()
+            
         }
     }
 }
