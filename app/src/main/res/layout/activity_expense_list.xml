@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="@string/stats"
+        android:text="@string/expense_list"
         android:textColor="@color/text_primary"
         android:textSize="28sp"
         android:textStyle="bold"
@@ -85,37 +85,36 @@
             android:textSize="12sp"/>
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvGrandTotal"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnFilter"
+        style="@style/Widget.MaterialComponents.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textColor="@color/text_primary"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp"
+        android:text="@string/filter"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/dateLabelsLayout"/>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvStats"
+        android:id="@+id/rvExpenses"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvGrandTotal"/>
+        app:layout_constraintTop_toBottomOf="@id/btnFilter"/>
 
     <TextView
         android:id="@+id/tvEmpty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/no_stats"
+        android:text="@string/no_expenses_in_period"
         android:textColor="@color/text_muted"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvGrandTotal"/>
+        app:layout_constraintTop_toBottomOf="@id/btnFilter"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
