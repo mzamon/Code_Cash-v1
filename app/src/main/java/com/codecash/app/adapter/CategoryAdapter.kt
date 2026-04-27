@@ -1,43 +1,34 @@
 package com.codecash.app.adapter
 
+import android.graphics.Color
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.codecash.app.R
-import com.codecash.app.data.entity.CategoryEntity
+import com.codecash.app.data.entity.Category
+import com.codecash.app.databinding.ItemCategoryBinding
 
 class CategoryAdapter(
-    private var categories: List<CategoryEntity>,
-    private val onDeleteClick: (CategoryEntity) -> Unit
+    private var categories: List<Category>,
+    private val onDeleteClick: (Category) -> Unit
 ) : RecyclerView.Adapter<CategoryAdapter.ViewHolder>() {
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val tvCategoryName: TextView = view.findViewById(R.id.tvCategoryName)
-        val btnDeleteCategory: ImageButton = view.findViewById(R.id.btnDeleteCategory)
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_category, parent, false)
-        return ViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val category = categories[position]
-        holder.tvCategoryName.text = category.name
-        
-        holder.btnDeleteCategory.setOnClickListener {
-            onDeleteClick(category)
+    inner class ViewHolder(private val binding: ItemCategoryBinding)
+        : RecyclerView.ViewHolder(binding.root) {
+        fun bind(category: Category) {
+            binding.tvCategoryName.text = category.name
+            try {
+                binding.viewColor.setBackgroundColor(Color.parseColor(category.colorHex))
+            } catch (e: Exception) {
+                binding.viewColor.setBackgroundColor(Color.parseColor("#00D4AA"))
+            }
+            binding.btnDelete.setOnClickListener { onDeleteClick(category) }
         }
     }
 
-    override fun getItemCount() = categories.size
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+        ViewHolder(ItemCategoryBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    fun updateData(newCategories: List<CategoryEntity>) {
-        categories = newCategories
-        notifyDataSetChanged()
-    }
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(categories[position])
+    override fun getItemCount() = categories.size
+    fun updateData(newList: List<Category>) { categories = newList; notifyDataSetChanged() }
 }

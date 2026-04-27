@@ -1,113 +1,85 @@
 package com.codecash.app
 
+import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
+import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.codecash.app.data.AppDatabase
 import com.codecash.app.databinding.ActivityExpenseDetailBinding
+import com.codecash.app.util.SessionManager
 import kotlinx.coroutines.launch
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
+import java.text.NumberFormat
+import java.util.Locale
 
 class ExpenseDetailActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityExpenseDetailBinding
-    private val TAG = "ExpenseDetailActivity"
-    private var expenseId: Int = -1
+    private lateinit var db: AppDatabase
+    private lateinit var session: SessionManager
+    private val currencyFormat = NumberFormat.getCurrencyInstance(Locale("en", "ZA"))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityExpenseDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        expenseId = intent.getIntExtra("expense_id", -1)
-        
-        if (expenseId == -1) {
-            Toast.makeText(this, "Invalid expense", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
-
-        setupDeleteButton()
+        db = AppDatabase.getInstance(this)
+        session = SessionManager(this)
         binding.btnBack.setOnClickListener { finish() }
-        loadExpenseDetails()
-    }
 
-    private fun setupDeleteButton() {
-        binding.btnDelete.setOnClickListener {
-            androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle(getString(R.string.delete))
-                .setMessage(getString(R.string.delete_confirm))
-                .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                    deleteExpense()
-                }
-                .setNegativeButton(getString(R.string.cancel), null)
-                .show()
-        }
-    }
+        val entryId = intent.getLongExtra("entry_id", -1L)
+        if (entryId == -1L) { finish(); return }
 
-    private fun deleteExpense() {
         lifecycleScope.launch {
-            try {
-                val db = AppDatabase.getDatabase(this@ExpenseDetailActivity)
-                val expense = db.expenseDao().getExpenseById(expenseId)
-                
-                if (expense != null) {
-                    // Delete photo file if exists
-                    expense.photoPath?.let { path ->
-                        try {
-                            File(path).delete()
-                        } catch (e: Exception) {
-                            Log.w(TAG, "Failed to delete photo file", e)
-                        }
-                    }
-                    
-                    // Delete expense from database
-                    db.expenseDao().delete(expense)
-                    Toast.makeText(this@ExpenseDetailActivity, getString(R.string.expense_deleted), Toast.LENGTH_SHORT).show()
-                    finish()
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error deleting expense", e)
-                Toast.makeText(this@ExpenseDetailActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            val entry = db.expenseEntryDao().getEntryById(entryId)
+            if (entry == null) { finish(); return@launch }
+
+            binding.tvDescription.text = entry.description
+            binding.tvDate.text = entry.date
+            binding.tvStartTime.text = entry.startTime
+            binding.tvEndTime.text = entry.endTime
+            binding.tvAmount.text = currencyFormat.format(entry.amount)
+
+            val cat = entry.categoryId?.let { db.categoryDao().getCategoryById(it) }
+            binding.tvCategory.text = cat?.name ?: "Uncategorised"
+            cat?.let {
+                try {
+                    binding.viewCategoryColor.setBackgroundColor(
+                        android.graphics.Color.parseColor(it.colorHex)
+                    )
+                } catch (e: Exception) { /* ignore */ }
             }
-        }
-    }
 
-    private fun loadExpenseDetails() {
-        lifecycleScope.launch {
-            try {
-                val db = AppDatabase.getDatabase(this@ExpenseDetailActivity)
-                val expense = db.expenseDao().getExpenseById(expenseId)
-                val category = expense?.categoryId?.let { db.categoryDao().getCategoryById(it) }
-                
-                if (expense != null) {
-                    binding.tvDetailDescription.text = expense.description
-                    binding.tvDetailCategory.text = category?.name ?: "Unknown"
-                    binding.tvDetailDate.text = SimpleDateFormat("dd MMM yyyy 'at' HH:mm", Locale.getDefault()).format(Date(expense.date))
-                    binding.tvDetailAmount.text = "R${String.format("%,.2f", expense.amount)}"
-                    binding.tvDetailAmount.setTextColor(getColor(R.color.expense_red))
-                    binding.tvDetailReference.text = "ID: #${expense.id.toString().padStart(6, '0')}"
-                    
-                    // Load photo if exists
-                    expense.photoPath?.let { path ->
-                        val photoFile = File(path)
-                        if (photoFile.exists()) {
-                            binding.ivDetailPhoto.setImageURI(android.net.Uri.fromFile(photoFile))
-                            binding.ivDetailPhoto.visibility = android.view.View.VISIBLE
-                        }
-                    } ?: run {
-                        binding.ivDetailPhoto.visibility = android.view.View.GONE
-                    }
+            if (!entry.photoPath.isNullOrEmpty()) {
+                val file = File(entry.photoPath)
+                if (file.exists()) {
+                    binding.ivPhoto.setImageURI(Uri.fromFile(file))
+                    binding.ivPhoto.visibility = View.VISIBLE
+                    binding.tvNoPhoto.visibility = View.GONE
                 } else {
-                    Toast.makeText(this@ExpenseDetailActivity, "Expense not found", Toast.LENGTH_SHORT).show()
-                    finish()
+                    binding.ivPhoto.visibility = View.GONE
+                    binding.tvNoPhoto.visibility = View.VISIBLE
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error loading expense details", e)
-                Toast.makeText(this@ExpenseDetailActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            } else {
+                binding.ivPhoto.visibility = View.GONE
+                binding.tvNoPhoto.visibility = View.VISIBLE
+            }
+
+            binding.btnDelete.setOnClickListener {
+                AlertDialog.Builder(this@ExpenseDetailActivity, R.style.AlertDialogTheme)
+                    .setTitle("Delete Entry")
+                    .setMessage("Delete this expense?")
+                    .setPositiveButton("Delete") { _, _ ->
+                        lifecycleScope.launch {
+                            db.expenseEntryDao().deleteEntry(entry)
+                            finish()
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
             }
         }
     }

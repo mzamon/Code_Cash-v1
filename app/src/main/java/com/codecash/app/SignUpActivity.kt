@@ -2,70 +2,90 @@ package com.codecash.app
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.codecash.app.data.AppDatabase
-import com.codecash.app.data.entity.UserEntity
+import com.codecash.app.data.entity.User
 import com.codecash.app.databinding.ActivitySignupBinding
+import com.codecash.app.util.HashUtils
+import com.codecash.app.util.SessionManager
 import kotlinx.coroutines.launch
 
 class SignUpActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivitySignupBinding
-    private val TAG = "SignUpActivity"
+    private lateinit var db: AppDatabase
+    private lateinit var session: SessionManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.btnCreateAccount.setOnClickListener {
-            val name = binding.etName.text.toString().trim()
-            val username = binding.etUsername.text.toString().trim()
-            val password = binding.etPassword.text.toString().trim()
-            val confirmPassword = binding.etConfirmPassword.text.toString().trim()
+        db = AppDatabase.getInstance(this)
+        session = SessionManager(this)
 
-            when {
-                name.isEmpty() || username.isEmpty() || password.isEmpty() -> {
-                    Toast.makeText(this, getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-                password.length < 6 -> {
-                    Toast.makeText(this, getString(R.string.password_min_length), Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-                password != confirmPassword -> {
-                    Toast.makeText(this, getString(R.string.passwords_not_match), Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-            }
+        binding.btnCreateAccount.setOnClickListener { attemptRegistration() }
+        binding.tvLogin.setOnClickListener { finish() }
+    }
 
-            lifecycleScope.launch {
-                try {
-                    val db = AppDatabase.getDatabase(this@SignUpActivity)
-                    if (db.userDao().getUserByUsername(username) != null) {
-                        Toast.makeText(this@SignUpActivity, getString(R.string.username_exists), Toast.LENGTH_SHORT).show()
-                        return@launch
-                    }
+    private fun attemptRegistration() {
+        val displayName = binding.etDisplayName.text.toString().trim()
+        val username = binding.etUsername.text.toString().trim()
+        val password = binding.etPassword.text.toString().trim()
+        val confirmPassword = binding.etConfirmPassword.text.toString().trim()
 
-                    val user = UserEntity(username = username, password = password, email = "$username@codecash.local")
-                    db.userDao().insert(user)
-                    Log.d(TAG, "Account created: $username")
-                    Toast.makeText(this@SignUpActivity, "Account created!", Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this@SignUpActivity, LoginActivity::class.java))
-                    finish()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Signup error", e)
-                    Toast.makeText(this@SignUpActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+        var isValid = true
+        if (displayName.isEmpty()) { binding.tilDisplayName.error = "Name is required"; isValid = false }
+        else binding.tilDisplayName.error = null
+
+        if (username.isEmpty()) { binding.tilUsername.error = "Username is required"; isValid = false }
+        else if (username.length < 3) { binding.tilUsername.error = "At least 3 characters"; isValid = false }
+        else binding.tilUsername.error = null
+
+        if (password.isEmpty()) { binding.tilPassword.error = "Password is required"; isValid = false }
+        else if (password.length < 6) { binding.tilPassword.error = "At least 6 characters"; isValid = false }
+        else binding.tilPassword.error = null
+
+        if (confirmPassword != password) { binding.tilConfirmPassword.error = "Passwords do not match"; isValid = false }
+        else binding.tilConfirmPassword.error = null
+
+        if (!isValid) return
+
+        setLoading(true)
+
+        lifecycleScope.launch {
+            try {
+                val existing = db.userDao().getUserByUsername(username)
+                if (existing != null) {
+                    setLoading(false)
+                    binding.tilUsername.error = "Username already taken"
+                    return@launch
                 }
+
+                val user = User(
+                    username = username,
+                    passwordHash = HashUtils.sha256(password),
+                    displayName = displayName
+                )
+                val userId = db.userDao().insertUser(user)
+                session.saveSession(userId, username, displayName)
+                startActivity(Intent(this@SignUpActivity, DashboardActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                })
+                finish()
+            } catch (e: Exception) {
+                setLoading(false)
+                Toast.makeText(this@SignUpActivity,
+                    "Registration failed. Please try again.", Toast.LENGTH_SHORT).show()
             }
         }
+    }
 
-        binding.tvLogin.setOnClickListener {
-            startActivity(Intent(this, LoginActivity::class.java))
-        }
-
-        binding.btnBack.setOnClickListener { finish() }
+    private fun setLoading(loading: Boolean) {
+        binding.btnCreateAccount.isEnabled = !loading
+        binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
     }
 }

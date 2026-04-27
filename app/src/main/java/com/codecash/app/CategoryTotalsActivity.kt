@@ -1,38 +1,37 @@
 package com.codecash.app
 
 import android.app.DatePickerDialog
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.codecash.app.adapter.ExpenseAdapter
+import com.codecash.app.adapter.CategoryTotalAdapter
 import com.codecash.app.data.AppDatabase
-import com.codecash.app.data.entity.Category
-import com.codecash.app.databinding.ActivityExpenseListBinding
+import com.codecash.app.databinding.ActivityCategoryTotalsBinding
 import com.codecash.app.util.SessionManager
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class ExpenseListActivity : AppCompatActivity() {
+class CategoryTotalsActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityExpenseListBinding
+    private lateinit var binding: ActivityCategoryTotalsBinding
     private lateinit var db: AppDatabase
     private lateinit var session: SessionManager
-    private lateinit var adapter: ExpenseAdapter
-    private var categoryMap = mapOf<Long, Category>()
+    private lateinit var adapter: CategoryTotalAdapter
     private val displaySdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     private val storageSdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    private val currencyFormat = NumberFormat.getCurrencyInstance(Locale("en", "ZA"))
     private var startDate = ""
     private var endDate = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityExpenseListBinding.inflate(layoutInflater)
+        binding = ActivityCategoryTotalsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         db = AppDatabase.getInstance(this)
@@ -41,14 +40,10 @@ class ExpenseListActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
         setDefaultPeriod()
 
-        adapter = ExpenseAdapter(emptyList(), categoryMap) { entry ->
-            startActivity(Intent(this, ExpenseDetailActivity::class.java).apply {
-                putExtra("entry_id", entry.id)
-            })
-        }
-        binding.rvExpenses.apply {
-            layoutManager = LinearLayoutManager(this@ExpenseListActivity)
-            adapter = this@ExpenseListActivity.adapter
+        adapter = CategoryTotalAdapter(emptyList())
+        binding.rvCategoryTotals.apply {
+            layoutManager = LinearLayoutManager(this@CategoryTotalsActivity)
+            adapter = this@CategoryTotalsActivity.adapter
         }
 
         setupDateButtons()
@@ -57,15 +52,9 @@ class ExpenseListActivity : AppCompatActivity() {
                 Toast.makeText(this, "Start date must be before end date", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            loadEntries()
+            loadTotals()
         }
-
-        lifecycleScope.launch {
-            val cats = db.categoryDao().getCategoriesByUserOnce(session.getUserId())
-            categoryMap = cats.associateBy { it.id }
-            adapter.updateCategories(categoryMap)
-            loadEntries()
-        }
+        loadTotals()
     }
 
     private fun setDefaultPeriod() {
@@ -96,18 +85,32 @@ class ExpenseListActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadEntries() {
+    private fun loadTotals() {
         lifecycleScope.launch {
             try {
                 binding.progressBar.visibility = View.VISIBLE
-                val entries = db.expenseEntryDao().getEntriesInPeriod(session.getUserId(), startDate, endDate)
-                adapter.updateData(entries)
+                val totals = db.expenseEntryDao().getCategoryTotalsInPeriod(session.getUserId(), startDate, endDate)
+                val cats = db.categoryDao().getCategoriesByUserOnce(session.getUserId())
+                val catMap = cats.associateBy { it.id }
+
+                val items = totals.map { ct ->
+                    val cat = ct.categoryId?.let { catMap[it] }
+                    CategoryTotalAdapter.CategoryTotalItem(
+                        categoryName = cat?.name ?: "Uncategorised",
+                        colorHex = cat?.colorHex ?: "#8BA4C0",
+                        total = ct.total,
+                        formattedTotal = currencyFormat.format(ct.total)
+                    )
+                }.sortedByDescending { it.total }
+
+                binding.tvGrandTotal.text = "Total: ${currencyFormat.format(items.sumOf { it.total })}"
+                binding.tvPeriodLabel.text = "Period: ${binding.btnStartDate.text} – ${binding.btnEndDate.text}"
+                adapter.updateData(items)
                 binding.progressBar.visibility = View.GONE
-                binding.tvEmpty.visibility = if (entries.isEmpty()) View.VISIBLE else View.GONE
-                binding.tvResultCount.text = "${entries.size} expense${if (entries.size == 1) "" else "s"} found"
+                binding.tvEmpty.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
             } catch (e: Exception) {
                 binding.progressBar.visibility = View.GONE
-                Toast.makeText(this@ExpenseListActivity, "Failed to load entries", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@CategoryTotalsActivity, "Failed to load totals", Toast.LENGTH_SHORT).show()
             }
         }
     }

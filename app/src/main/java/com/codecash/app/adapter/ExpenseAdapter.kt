@@ -1,56 +1,52 @@
 package com.codecash.app.adapter
 
+import android.graphics.Color
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.codecash.app.R
-import com.codecash.app.data.entity.ExpenseEntity
-import java.text.SimpleDateFormat
-import java.util.*
+import com.codecash.app.data.entity.Category
+import com.codecash.app.data.entity.ExpenseEntry
+import com.codecash.app.databinding.ItemExpenseBinding
+import java.text.NumberFormat
+import java.util.Locale
 
 class ExpenseAdapter(
-    private var expenses: List<ExpenseEntity>,
-    private var categoryMap: Map<Int, String>,
-    private val onItemClick: (ExpenseEntity) -> Unit
+    private var entries: List<ExpenseEntry>,
+    private var categoryMap: Map<Long, Category>,
+    private val onItemClick: (ExpenseEntry) -> Unit
 ) : RecyclerView.Adapter<ExpenseAdapter.ViewHolder>() {
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val tvDescription: TextView = view.findViewById(R.id.tvDescription)
-        val tvCategory: TextView = view.findViewById(R.id.tvCategory)
-        val tvDate: TextView = view.findViewById(R.id.tvDate)
-        val tvAmount: TextView = view.findViewById(R.id.tvAmount)
-        val ivPhotoIndicator: ImageView = view.findViewById(R.id.ivPhotoIndicator)
-    }
+    private val currencyFormat = NumberFormat.getCurrencyInstance(Locale("en", "ZA"))
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_expense, parent, false)
-        return ViewHolder(view)
-    }
+    inner class ViewHolder(private val binding: ItemExpenseBinding)
+        : RecyclerView.ViewHolder(binding.root) {
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val expense = expenses[position]
-        holder.tvDescription.text = expense.description
-        holder.tvCategory.text = categoryMap[expense.categoryId] ?: "Unknown"
-        holder.tvDate.text = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(expense.date))
-        holder.tvAmount.text = "R${String.format("%,.2f", expense.amount)}"
-        holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.expense_red))
-        
-        holder.ivPhotoIndicator.visibility = if (expense.photoPath != null) View.VISIBLE else View.GONE
-        
-        holder.itemView.setOnClickListener {
-            onItemClick(expense)
+        fun bind(entry: ExpenseEntry) {
+            val category = entry.categoryId?.let { categoryMap[it] }
+            try {
+                binding.viewColorStrip.setBackgroundColor(
+                    Color.parseColor(category?.colorHex ?: "#8BA4C0"))
+            } catch (e: Exception) {
+                binding.viewColorStrip.setBackgroundColor(Color.parseColor("#8BA4C0"))
+            }
+            binding.tvDescription.text = entry.description
+            binding.tvCategory.text = category?.name ?: "Uncategorised"
+            binding.tvDate.text = entry.date
+            binding.tvTime.text = "${entry.startTime} – ${entry.endTime}"
+            binding.tvAmount.text = currencyFormat.format(entry.amount)
+            binding.ivPhotoIndicator.visibility =
+                if (!entry.photoPath.isNullOrEmpty()) android.view.View.VISIBLE
+                else android.view.View.GONE
+            binding.root.setOnClickListener { onItemClick(entry) }
         }
     }
 
-    override fun getItemCount() = expenses.size
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+        ViewHolder(ItemExpenseBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    fun updateData(newExpenses: List<ExpenseEntity>, newCategoryMap: Map<Int, String>) {
-        expenses = newExpenses
-        categoryMap = newCategoryMap
-        notifyDataSetChanged()
-    }
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(entries[position])
+    override fun getItemCount() = entries.size
+
+    fun updateData(newEntries: List<ExpenseEntry>) { entries = newEntries; notifyDataSetChanged() }
+    fun updateCategories(newMap: Map<Long, Category>) { categoryMap = newMap; notifyDataSetChanged() }
 }

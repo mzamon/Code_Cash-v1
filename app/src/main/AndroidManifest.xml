@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.codecash.app">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
@@ -12,39 +18,54 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CodeCash">
 
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
-
         <activity
             android:name=".SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.CodeCash.Splash">
+            android:theme="@style/Theme.CodeCash.Splash"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".LoginActivity" />
-        <activity android:name=".SignUpActivity" />
-        <activity android:name=".DashboardActivity" />
-        <activity android:name=".AddExpenseActivity" />
-        <activity android:name=".CategoriesActivity" />
-        <activity android:name=".ExpenseListActivity" />
-        <activity android:name=".ExpenseDetailActivity" />
-        <activity android:name=".BudgetActivity" />
-        <activity android:name=".StatsActivity" />
-        <activity android:name=".ProfileActivity" />
-        <activity android:name=".SettingsActivity" />
-        <activity android:name=".ForecastActivity" />
+        <activity android:name=".LoginActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".SignUpActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".DashboardActivity"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop"/>
+        <activity android:name=".CategoryActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".AddExpenseActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".ExpenseListActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".CategoryTotalsActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".BudgetGoalActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".ExpenseDetailActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ProfileActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".SettingsActivity"
+            android:screenOrientation="portrait"/>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.codecash.app.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths" />
+        </provider>
 
     </application>
-
 </manifest>

@@ -2,31 +2,26 @@ package com.codecash.app
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.codecash.app.data.AppDatabase
-import com.codecash.app.databinding.ActivitySplashBinding
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.codecash.app.util.SessionManager
 
 class SplashActivity : AppCompatActivity() {
-    private lateinit var binding: ActivitySplashBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivitySplashBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_splash)
 
-        lifecycleScope.launch {
-            delay(1200)
-            val user = AppDatabase.getDatabase(this@SplashActivity).userDao().getFirstUser()
-            val intent = if (user != null) {
-                Intent(this@SplashActivity, LoginActivity::class.java)
+        Handler(Looper.getMainLooper()).postDelayed({
+            val session = SessionManager(this)
+            val destination = if (session.isLoggedIn()) {
+                DashboardActivity::class.java
             } else {
-                Intent(this@SplashActivity, SignUpActivity::class.java)
+                LoginActivity::class.java
             }
-            startActivity(intent)
+            startActivity(Intent(this, destination))
             finish()
-        }
+        }, 2000L)
     }
 }
