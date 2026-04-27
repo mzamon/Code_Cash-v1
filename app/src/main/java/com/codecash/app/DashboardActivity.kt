@@ -40,7 +40,6 @@ class DashboardActivity : AppCompatActivity() {
         setupRecyclerView()
         loadCategories()
         observeRecentExpenses()
-        loadBudgetSummary()
         setupNavigation()
     }
 
@@ -52,6 +51,7 @@ class DashboardActivity : AppCompatActivity() {
         binding.btnBudgetGoal.setOnClickListener { startActivity(Intent(this, BudgetGoalActivity::class.java)) }
         binding.btnProfile.setOnClickListener { startActivity(Intent(this, ProfileActivity::class.java)) }
         binding.tvViewAll.setOnClickListener { startActivity(Intent(this, ExpenseListActivity::class.java)) }
+        binding.btnSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
         binding.btnLogout.setOnClickListener {
             session.clearSession()
             navigateToLogin()
@@ -103,13 +103,15 @@ class DashboardActivity : AppCompatActivity() {
                 binding.tvTotalSpent.text = currencyFormat.format(totalSpent)
 
                 if (goal != null) {
+                    val range = goal.maxAmount - goal.minAmount
                     binding.tvBudgetRange.text =
                         "Goal: ${currencyFormat.format(goal.minAmount)} – ${currencyFormat.format(goal.maxAmount)}"
+                    
                     val progress = when {
                         totalSpent <= goal.minAmount -> 0
                         totalSpent >= goal.maxAmount -> 100
-                        else -> ((totalSpent - goal.minAmount) /
-                                (goal.maxAmount - goal.minAmount) * 100).toInt()
+                        range > 0 -> ((totalSpent - goal.minAmount) / range * 100).toInt()
+                        else -> 100 // if min == max and spent > min
                     }
                     binding.budgetProgressBar.progress = progress
                 } else {
@@ -117,7 +119,7 @@ class DashboardActivity : AppCompatActivity() {
                     binding.budgetProgressBar.progress = 0
                 }
             } catch (e: Exception) {
-                // Handled silently — UI shows defaults
+                // Handled silently
             }
         }
     }

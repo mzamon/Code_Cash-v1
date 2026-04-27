@@ -12,7 +12,7 @@
         style="@style/CodeCash.TextInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="12dp"
         android:hint="Category Name">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etCategoryName"
@@ -22,10 +22,24 @@
             android:textColor="@color/text_primary"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/CodeCash.TextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="Monthly Limit (Optional)">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etCategoryLimit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:textColor="@color/text_primary"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="COLOUR"
+        android:text="COLOR"
         android:textColor="@color/text_secondary"
         android:textSize="11sp"
         android:letterSpacing="0.1"

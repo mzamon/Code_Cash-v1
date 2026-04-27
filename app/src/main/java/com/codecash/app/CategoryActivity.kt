@@ -82,13 +82,21 @@ class CategoryActivity : AppCompatActivity() {
             .setView(dialogBinding.root)
             .setPositiveButton("Create") { _, _ ->
                 val name = dialogBinding.etCategoryName.text.toString().trim()
+                val limitStr = dialogBinding.etCategoryLimit.text.toString().trim()
+                val limit = limitStr.toDoubleOrNull() ?: 0.0
+
                 if (name.isEmpty()) {
                     Toast.makeText(this, "Name cannot be empty", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
                 lifecycleScope.launch {
                     db.categoryDao().insertCategory(
-                        Category(userId = session.getUserId(), name = name, colorHex = selectedColor)
+                        Category(
+                            userId = session.getUserId(),
+                            name = name,
+                            colorHex = selectedColor,
+                            monthlyLimit = limit
+                        )
                     )
                 }
             }
@@ -99,7 +107,7 @@ class CategoryActivity : AppCompatActivity() {
     private fun showDeleteDialog(category: Category) {
         AlertDialog.Builder(this, R.style.AlertDialogTheme)
             .setTitle("Delete Category")
-            .setMessage("Delete '${category.name}'?")
+            .setMessage("Delete '${category.name}'? This will uncategorize related expenses.")
             .setPositiveButton("Delete") { _, _ ->
                 lifecycleScope.launch { db.categoryDao().deleteCategory(category) }
             }

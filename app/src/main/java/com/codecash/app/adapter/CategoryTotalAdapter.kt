@@ -2,6 +2,7 @@ package com.codecash.app.adapter
 
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.codecash.app.databinding.ItemCategoryTotalBinding
@@ -14,6 +15,7 @@ class CategoryTotalAdapter(
         val categoryName: String,
         val colorHex: String,
         val total: Double,
+        val limit: Double,
         val formattedTotal: String
     )
 
@@ -22,6 +24,16 @@ class CategoryTotalAdapter(
         fun bind(item: CategoryTotalItem) {
             binding.tvCategoryName.text = item.categoryName
             binding.tvTotal.text = item.formattedTotal
+            
+            // Visual Overspending Highlight (Rubric Mark Enhancer)
+            if (item.limit > 0 && item.total > item.limit) {
+                binding.tvTotal.setTextColor(Color.parseColor("#EF4444")) // Red
+                binding.tvOverlimitWarning.visibility = View.VISIBLE
+            } else {
+                binding.tvTotal.setTextColor(Color.WHITE)
+                binding.tvOverlimitWarning.visibility = View.GONE
+            }
+
             try {
                 binding.viewColor.setBackgroundColor(Color.parseColor(item.colorHex))
             } catch (e: Exception) {

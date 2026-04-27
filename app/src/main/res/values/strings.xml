@@ -13,4 +13,25 @@
     <string name="password">Password</string>
     <string name="welcome_back">Welcome Back</string>
     <string name="dont_have_account">Don\'t have an account? Sign Up</string>
+
+    <!-- Essential strings for active Part 2 layouts -->
+    <string name="select_month">Select Month</string>
+    <string name="min_goal">Min Goal (R)</string>
+    <string name="max_goal">Max Goal (R)</string>
+    <string name="save_goal">Save Goal</string>
+    <string name="category_name">Category Name</string>
+    <string name="add_category">Add Category</string>
+    <string name="no_categories">No categories added yet</string>
+    <string name="amount">Amount (R)</string>
+    <string name="submit">Submit</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Fallback strings for legacy layouts to allow build to pass -->
+    <string name="forecast">Forecast</string>
+    <string name="request_money">Request Money</string>
+    <string name="request_from">Request From</string>
+    <string name="reason">Reason</string>
+    <string name="send_money">Send Money</string>
+    <string name="recipient">Recipient</string>
+    <string name="note">Note</string>
 </resources>

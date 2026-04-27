@@ -31,19 +31,33 @@ class ProfileActivity : AppCompatActivity() {
             binding.tvDisplayName.text = user?.displayName ?: session.getDisplayName()
             binding.tvUsername.text = "@${user?.username ?: session.getUsername()}"
 
-            val entryCount = db.expenseEntryDao()
-                .getEntriesInPeriod(session.getUserId(), "0000-01-01", "9999-12-31").size
-            val categoryCount = db.categoryDao()
-                .getCategoriesByUserOnce(session.getUserId()).size
+            val entries = db.expenseEntryDao().getEntriesInPeriod(session.getUserId(), "0000-01-01", "9999-12-31")
+            val entryCount = entries.size
+            val categories = db.categoryDao().getCategoriesByUserOnce(session.getUserId())
+            val categoryCount = categories.size
+            val latestGoal = db.budgetGoalDao().getLatestGoal(session.getUserId())
 
             binding.tvEntryCount.text = "$entryCount"
             binding.tvCategoryCount.text = "$categoryCount"
+
+            // --- Gamification Logic ---
+            val badges = StringBuilder()
+            if (entryCount >= 5) badges.append("🏅 Consistent Logger\n")
+            if (latestGoal != null) badges.append("🎯 Budget Master\n")
+            if (categoryCount >= 3) badges.append("🗂️ Super Organizer\n")
+            if (entries.any { it.amount > 1000 }) badges.append("💎 Big Spender\n")
+
+            if (badges.isEmpty()) {
+                binding.tvBadges.text = "Start logging expenses to earn badges!"
+            } else {
+                binding.tvBadges.text = badges.toString()
+            }
         }
 
         binding.btnLogout.setOnClickListener {
             AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setTitle("Log Out")
-                .setMessage("Are you sure?")
+                .setMessage("Are you sure you want to log out?")
                 .setPositiveButton("Log Out") { _, _ ->
                     session.clearSession()
                     startActivity(Intent(this, LoginActivity::class.java).apply {

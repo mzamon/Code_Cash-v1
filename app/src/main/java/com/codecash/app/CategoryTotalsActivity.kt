@@ -99,6 +99,7 @@ class CategoryTotalsActivity : AppCompatActivity() {
                         categoryName = cat?.name ?: "Uncategorised",
                         colorHex = cat?.colorHex ?: "#8BA4C0",
                         total = ct.total,
+                        limit = cat?.monthlyLimit ?: 0.0,
                         formattedTotal = currencyFormat.format(ct.total)
                     )
                 }.sortedByDescending { it.total }

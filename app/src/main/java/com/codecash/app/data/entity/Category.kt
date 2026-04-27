@@ -21,5 +21,6 @@ data class Category(
     val userId: Long,
     val name: String,
     val colorHex: String = "#00D4AA",
+    val monthlyLimit: Double = 0.0,
     val createdAt: Long = System.currentTimeMillis()
 )

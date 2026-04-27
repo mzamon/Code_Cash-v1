@@ -15,7 +15,7 @@ interface ExpenseEntryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntry(entry: ExpenseEntry): Long
 
-    @Update
+    @Update(onConflict = OnConflictStrategy.Update)
     suspend fun updateEntry(entry: ExpenseEntry)
 
     @Delete
@@ -23,6 +23,9 @@ interface ExpenseEntryDao {
 
     @Query("SELECT * FROM expense_entries WHERE userId = :userId ORDER BY date DESC, startTime DESC")
     fun getAllEntries(userId: Long): Flow<List<ExpenseEntry>>
+
+    @Query("SELECT COUNT(*) FROM expense_entries WHERE userId = :userId")
+    suspend fun getEntryCount(userId: Long): Int
 
     @Query("""
         SELECT * FROM expense_entries

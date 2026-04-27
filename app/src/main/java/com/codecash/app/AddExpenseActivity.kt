@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -70,6 +71,13 @@ class AddExpenseActivity : AppCompatActivity() {
     ) { granted ->
         if (granted) launchCamera()
         else Toast.makeText(this, "Camera permission required", Toast.LENGTH_SHORT).show()
+    }
+
+    private val galleryPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) pickImageLauncher.launch("image/*")
+        else Toast.makeText(this, "Permission required to access gallery", Toast.LENGTH_SHORT).show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -150,7 +158,19 @@ class AddExpenseActivity : AppCompatActivity() {
                                 == PackageManager.PERMISSION_GRANTED) launchCamera()
                             else cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                         }
-                        1 -> pickImageLauncher.launch("image/*")
+                        1 -> {
+                            val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                Manifest.permission.READ_MEDIA_IMAGES
+                            } else {
+                                Manifest.permission.READ_EXTERNAL_STORAGE
+                            }
+
+                            if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
+                                pickImageLauncher.launch("image/*")
+                            } else {
+                                galleryPermissionLauncher.launch(permission)
+                            }
+                        }
                     }
                 }.show()
         }
